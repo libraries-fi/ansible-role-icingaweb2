@@ -1,0 +1,5 @@
+icingaweb2_timezone: UTC
+icingaweb2_admin_username: icingaadmin
+icingaweb2_graphite_url: http://localhost:8080
+icingaweb2_graphite: false
+icingaweb2_certificate_dir: /etc/apache2/ssl

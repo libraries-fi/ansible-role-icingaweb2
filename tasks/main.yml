@@ -1,0 +1,105 @@
+- name: Install icingaweb2 and related packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    install_recommends: yes
+  with_items:
+    - icingaweb2
+    - libapache2-mod-wsgi
+
+- name: Import Icinga Web MySQL schema
+  mysql_db:
+    name: "{{ icingaweb2_db.name }}"
+    state: import
+    target: /usr/share/icingaweb2/etc/schema/mysql.schema.sql
+  when:
+    - db_created.changed
+    - synced_config is not defined
+
+- name: Set timezone for PHP
+  template:
+    src: 20-timezone.ini.j2
+    dest: /etc/php/7.0/apache2/conf.d/20-timezone.ini
+  notify: reload apache
+
+- name: Copy Apache virtualhost config  
+  template:
+    src: apache_vhost.conf.j2
+    dest: "/etc/apache2/sites-enabled/{{ ansible_fqdn }}.conf"
+  notify: reload apache
+
+- name: Remove default Apache virtualhost
+  file:
+    path: /etc/apache2/sites-enabled/000-default.conf
+    state: absent
+
+- name: Copy Icinga Web config files
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/icingaweb2/{{ item }}"
+  notify: reload apache
+  with_items:
+    - authentication.ini
+    - config.ini
+    - groups.ini
+    - resources.ini
+    - roles.ini
+
+- name: Create directories for module config files
+  file:
+    path: "/etc/icingaweb2/modules/{{item}}"
+    state: directory
+  with_items:
+    - monitoring
+    - graphite
+
+- name: Copy Monitoring module config files
+  template:
+    src: "modules/monitoring/{{ item }}.j2"
+    dest: "/etc/icingaweb2/modules/monitoring/{{ item }}"
+  notify: reload apache
+  with_items:
+    - backends.ini
+    - commandtransports.ini
+    - config.ini
+
+- name: Copy Graphite module config files
+  template:
+    src: "modules/graphite/{{ item }}.j2"
+    dest: "/etc/icingaweb2/modules/graphite/{{ item }}"
+  notify: reload apache
+  with_items:
+    - config.ini
+
+- name: Enable Icinga Web Monitoring plugin
+  command: icingacli module enable monitoring
+  args:
+    creates: /etc/icingaweb2/enabledModules/monitoring
+
+- name: Download Icinga Web graphite plugin
+  git:
+    repo: https://github.com/Icinga/icingaweb2-module-graphite
+    dest: /usr/share/icingaweb2/modules/graphite
+
+- name: Enable Icinga Web Graphite plugin
+  command: icingacli module enable graphite
+  args:
+    creates: /etc/icingaweb2/enabledModules/graphite
+  when: icingaweb2_graphite
+
+- name: Copy SQL script that creates icingaadmin user 
+  template:
+    src: admin_user.sql.j2
+    dest: /tmp/admin_user.sql
+  when:
+    - db_created.changed
+    - synced_config is not defined
+
+- name: Create admin user
+  mysql_db:
+    name: icingaweb
+    state: import
+    target: /tmp/admin_user.sql
+  when:
+    - db_created.changed
+    - synced_config is not defined

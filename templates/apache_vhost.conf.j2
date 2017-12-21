@@ -1,0 +1,31 @@
+# {{ ansible_managed }}
+<VirtualHost *:80>
+    RewriteEngine On
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName {{ ansible_fqdn }}
+    DocumentRoot /usr/share/icingaweb2/public
+
+    <Directory "/usr/share/icingaweb2/public">
+	Options SymLinksIfOwnerMatch
+	AllowOverride None
+	Require all granted
+	EnableSendfile Off
+	SetEnv ICINGAWEB_CONFIGDIR "/etc/icingaweb2"
+
+	RewriteEngine on
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} -s [OR]
+	RewriteCond %{REQUEST_FILENAME} -l [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^.*$ - [NC,L]
+	RewriteRule ^.*$ index.php [NC,L]
+    </Directory>
+
+    SSLEngine on
+    SSLCertificateFile  {{ icingaweb2_certificate_dir }}/{{ icingaweb2_certificate_common_name }}.crt
+    SSLCertificateKeyFile {{ icingaweb2_certificate_dir }}/{{ icingaweb2_certificate_common_name }}.key
+    SSLCertificateChainFile {{ icingaweb2_certificate_dir }}/{{ icingaweb2_certificate_common_name }}.bundle.crt
+</VirtualHost>
