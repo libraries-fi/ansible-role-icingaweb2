@@ -16,6 +16,7 @@ Role Variables
  * icingaweb2_graphite: do you want to use graphite graphs
  * icingaweb2_graphite_url: URL to your graphite web installation
  * icingaweb2_certificate_dir: directory where your TLS certificates are installed
+ * icingaweb2_graphite_version: git version to use for https://github.com/Icinga/icingaweb2-module-graphite
 
 Dependencies
 ------------
