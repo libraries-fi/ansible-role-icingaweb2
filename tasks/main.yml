@@ -80,6 +80,7 @@
   git:
     repo: https://github.com/Icinga/icingaweb2-module-graphite
     dest: /usr/share/icingaweb2/modules/graphite
+    version: "{{ icingaweb2_graphite_version }}"
 
 - name: Enable Icinga Web Graphite plugin
   command: icingacli module enable graphite
