@@ -3,4 +3,4 @@ icingaweb2_admin_username: icingaadmin
 icingaweb2_graphite_url: http://localhost:8080
 icingaweb2_graphite: false
 icingaweb2_certificate_dir: /etc/apache2/ssl
-icingaweb2_graphite_version: d012b74fb2b7a2614956637a2bae43747a1f97c8
+icingaweb2_graphite_version: dca78167ed9c4c90ba4d04f6472433cdbe18dc7a
