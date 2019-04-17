@@ -88,6 +88,18 @@
     creates: /etc/icingaweb2/enabledModules/graphite
   when: icingaweb2_graphite
 
+- name: Download Icinga Web pnp plugin
+  git:
+    repo: https://github.com/Icinga/icingaweb2-module-pnp
+    dest: /usr/share/icingaweb2/modules/pnp
+    version: "{{ icingaweb2_pnp_version }}"
+
+- name: Enable Icinga Web pnp plugin
+  command: icingacli module enable pnp
+  args:
+    creates: /etc/icingaweb2/enabledModules/pnp
+  when: icingaweb2_pnp
+
 - name: Copy SQL script that creates icingaadmin user 
   template:
     src: admin_user.sql.j2
